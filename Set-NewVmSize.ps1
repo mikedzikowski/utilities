@@ -17,6 +17,8 @@
 
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
+    
+    . .\Set-NewVmSize.ps1; Set-NewVMsize -VmList VM1, VM2 -ResourceGroup RG1 -NewVmSize Standard_DS2_v2
 #>
 Function Set-NewVmSize {
 
