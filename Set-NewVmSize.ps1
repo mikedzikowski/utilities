@@ -10,10 +10,6 @@
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set
-.EXAMPLE
-    .\Set-KeyVaultSecret.ps1 -vaultname 'ProdKeyVaultVA' -Secretname 'TSA-SECRET' -SecretValue 'P@$$w0rd!' -Enable $True -SetExpiration $true
-	   
-    This command will run the Set-KeyVaultSecret.ps1 using the parameters provided to create a key vault secret and secret value
 
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
