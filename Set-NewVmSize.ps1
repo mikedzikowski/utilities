@@ -9,7 +9,7 @@
 .Parameter NewVmSize
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
-    Specifies the availabiltiy set
+    Specifies the availabiltiy set name 
     
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
