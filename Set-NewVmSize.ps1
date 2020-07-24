@@ -10,17 +10,64 @@
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set
-.EXAMPLE
-    .\Set-KeyVaultSecret.ps1 -vaultname 'ProdKeyVaultVA' -Secretname 'TSA-SECRET' -SecretValue 'P@$$w0rd!' -Enable $True -SetExpiration $true
-	   
-    This command will run the Set-KeyVaultSecret.ps1 using the parameters provided to create a key vault secret and secret value
-
+    
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
     
     . .\Set-NewVmSize.ps1; Set-NewVMsize -VmList VM1, VM2 -ResourceGroup RG1 -NewVmSize Standard_DS2_v2
+
+    . .\Set-NewVMsize -PathToCsv C:\Path.csv
 #>
-Function Set-NewVmSize {
+[CmdletBinding()] 
+param 
+(  
+    [Parameter(mandatory=$false)]
+    [string]
+    $PathtoCsv
+)
+if($PathtoCsv)
+{
+    $ResizeExtract = Import-Csv -Path $PathtoCsv 
+
+    $availabilitySets = $ResizeExtract | Select-Object -Property AvailabilitySet, ResourceGroup, ToBeVmSize -Unique
+
+        foreach($hostname in $ResizeExtract)
+        {
+            if(!$hostname.AvailabilitySet)
+            {
+                Set-NewVmSize -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup
+            }
+        }
+        foreach ($as in $availabilitySets) 
+        {
+            If($as.AvailabilitySet -ne "" -or $null)
+            {
+                $availabilitySet = Get-AzAvailabilitySet -Name $as.AvailabilitySet
+                $vmIds = $availabilitySet.VirtualMachinesReferences 
+            foreach ($vmid in $vmIds) 
+            {
+                $string = $vmID.Id.Split("/")
+                $vmName = $string[8]
+                if($ResizeExtract.hostname -icontains $vmName)
+                {
+                    $continue =  $true
+                }
+                else
+                {
+                    $continue = $false
+                    Write-host "Virtual Machine" $Vmname "found in Availability Set" $as.AvailabilitySet "that is not listed in extract file. Stopping script from continuing."
+                    break 
+                }
+            }
+            if($continue -eq $true)
+            {
+                Write-host "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
+                Set-NewVMsize -AvailabilitySetName $as.AvailabilitySet  -ResourceGroup $as.ResourceGroup -NewVmSize $as.ToBeVmSize
+            }
+        }
+    }
+}
+Function Set-NewVmsize {
 
 [CmdletBinding()] 
 param 
@@ -44,6 +91,7 @@ param
     [Parameter(mandatory=$false,ParametersetName = 'VirtualMachine')]
     $AvailabilitySetName
 )
+
 if(!$availabilitySetName)
 {
     foreach($virtualMachine in $vmList)
@@ -51,7 +99,7 @@ if(!$availabilitySetName)
         $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine
 
         $vm = Get-AzVM -ResourceGroupName $resourceGroup -VMName $virtualMachine 
-
+    
     if($vmSize.name -contains $newVmSize)
     {
         Write-Host '----------------------------------------------------------------------------------------' 
