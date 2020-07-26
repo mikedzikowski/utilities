@@ -10,8 +10,8 @@
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set name
-.Notes
-    CSV fields: Hostaname, ResourceGroup, ToBeVmSize, AvailabilitySet (optional) 
+.NOTES
+    CSV fields: Hostaname, ResourceGroup, ToBe\VmSize, AvailabilitySet (optional) 
     
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
