@@ -1,4 +1,6 @@
 hostname,ToBeVmSize,ResourceGroup,AvailabilitySet
-ResizeVM1,Standard_DS1_v2,RG1,AS1
-ResizeVM2,Standard_DS1_v2,RG1,AS1
-ResizeVM3,Standard_DS1_v2,RG2,
+ResizeVM1,Standard_DS2_v2,TSA_DEMO,
+ResizeVM2,Standard_DS1_v2,TSA_DEMO,
+RESIZEFAILED,Standard_DS1_v2,TSA_DEMO,
+ResizeVM3,Standard_DS3_v2,TSA_DEMO,
+ResizeVM4,Standard_DS2_v2,TSA_DEMO,
