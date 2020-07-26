@@ -49,6 +49,7 @@ if($PathtoCsv)
             {
                 $string = $vmID.Id.Split("/")
                 $vmName = $string[8]
+                
                 if($ResizeExtract.hostname -icontains $vmName)
                 {
                     $continue =  $true
