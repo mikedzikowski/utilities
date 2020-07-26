@@ -9,7 +9,10 @@
 .Parameter NewVmSize
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
-    Specifies the availabiltiy set name 
+    Specifies the availabiltiy set name
+
+.Parameter Notes
+    CSV fields: Hostaname, ResourceGroup, ToBeVmSize, AvailabilitySet (optional) 
     
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
@@ -31,23 +34,24 @@ if($PathtoCsv)
 
     $availabilitySets = $ResizeExtract | Select-Object -Property AvailabilitySet, ResourceGroup, ToBeVmSize -Unique
 
-        foreach($hostname in $ResizeExtract)
+    foreach($hostname in $ResizeExtract)
+    {
+        if(!$hostname.AvailabilitySet)
         {
-            if(!$hostname.AvailabilitySet)
-            {
-                Set-NewVmSize -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup
-            }
+            Set-NewVmSize -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup
         }
-        foreach ($as in $availabilitySets) 
+    }
+    foreach ($as in $availabilitySets) 
+    {
+        If($as.AvailabilitySet -ne "" -or $null)
         {
-            If($as.AvailabilitySet -ne "" -or $null)
-            {
-                $availabilitySet = Get-AzAvailabilitySet -Name $as.AvailabilitySet
-                $vmIds = $availabilitySet.VirtualMachinesReferences 
-            foreach ($vmid in $vmIds) 
-            {
-                $string = $vmID.Id.Split("/")
-                $vmName = $string[8]
+            $availabilitySet = Get-AzAvailabilitySet -Name $as.AvailabilitySet
+            $vmIds = $availabilitySet.VirtualMachinesReferences 
+                foreach ($vmid in $vmIds) 
+                {
+                    $string = $vmID.Id.Split("/")
+                    $vmName = $string[8]
+                
                 if($ResizeExtract.hostname -icontains $vmName)
                 {
                     $continue =  $true
