@@ -1,7 +1,9 @@
 <#.SYNOPSIS
    Simple Script that will resize an array of virtual machines or all virutal machines in an availability set. 
 .DESCRIPTION
-    Simple Script that will resize an array of virtual machines or all virutal machines in an availability set. When resizing virtual machines in an Availability Set, this script will verify that all machines listed in CSV match the machines in the Availability Set. 
+    Simple Script that will resize an array of virtual machines or all virutal machines in an availability set. 
+    When resizing virtual machines in an Availability Set, this script will verify that all machines listed in CSV match the machines in the Availability Set 
+    before resizing the machines. 
 .Parameter ResourceGroup
     Specifies the Resource Group of the virtual machine or availability set
 .Parameter VmList
