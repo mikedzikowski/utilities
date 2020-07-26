@@ -10,8 +10,7 @@
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set name
-
-.Parameter Notes
+.Notes
     CSV fields: Hostaname, ResourceGroup, ToBeVmSize, AvailabilitySet (optional) 
     
 .EXAMPLE
