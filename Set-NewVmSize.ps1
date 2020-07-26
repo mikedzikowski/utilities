@@ -1,7 +1,7 @@
 <#.SYNOPSIS
-   Simple Script that will resize an array of virtual machines or all virutal machines in an availability set. 
+   Simple script that will resize an array of virtual machines or all virutal machines in an availability set. 
 .DESCRIPTION
-    Simple Script that will resize an array of virtual machines or all virutal machines in an availability set. 
+    Simple script that will resize an array of virtual machines or all virutal machines in an availability set. 
 .Parameter ResourceGroup
     Specifies the Resource Group of the virtual machine or availability set
 .Parameter VmList
@@ -10,7 +10,8 @@
     Specifies the Sku size for the virtual machine
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set
-    
+.NOTES
+    CSV should have the following columns: Hostname, ToBeVmSize, Resourcegroup, AvailabilitySet (optional)
 .EXAMPLE
     . .\Set-NewVmSize.ps1; Set-NewVMsize -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
     
