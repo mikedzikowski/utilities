@@ -60,13 +60,13 @@ if($PathtoCsv)
                 else
                 {
                     $continue = $false
-                    Write-Output "Virtual Machine" $Vmname "found in Availability Set" $as.AvailabilitySet "that is not listed in extract file. Stopping script from continuing."
+                    Write-Host "Virtual Machine" $Vmname "found in Availability Set" $as.AvailabilitySet "that is not listed in extract file. Stopping script from continuing."
                     exit
                 }
             }
             if($continue -eq $true)
             {
-                Write-Output "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
+                Write-Host "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
                 Resize-Vm -AvailabilitySetName $as.AvailabilitySet  -ResourceGroup $as.ResourceGroup -NewVmSize $as.ToBeVmSize
             }
         }
@@ -96,47 +96,45 @@ param
     [Parameter(mandatory=$false,ParametersetName = 'VirtualMachine')]
     $AvailabilitySetName
 )
-$ErrorActionPreference = "SilentlyContinue"
 
-if(!$availabilitySetName)
+if(!$availabilitySetName -or $availabilitySetName -eq "")
 {
     foreach($virtualMachine in $vmList)
     {
-
-        $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine  | Out-Null
-        $vm = Get-AzVM -ResourceGroupName $resourceGroup -VMName $virtualMachine | Out-Null
+        $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine
+        $vm = Get-AzVM -ResourceGroupName $resourceGroup -VMName $virtualMachine
 
     if($vmSize.name -contains $newVmSize)
     {
-        Write-Output '----------------------------------------------------------------------------------------'
-        Write-Output 'Sku for resize found on hardware cluster' $($vm.AvailabilitySetReference.id)
-        Write-Output '----------------------------------------------------------------------------------------'
+        Write-Host '----------------------------------------------------------------------------------------'
+        Write-Host 'Sku for resize found on hardware cluster' $($vm.AvailabilitySetReference.id)
+        Write-Host '----------------------------------------------------------------------------------------'
 
             If($vm.HardwareProfile.VmSize -ne $NewVmSize)
             {
                 $vm.HardwareProfile.VmSize = $newVmSize
 
-                Write-Output '----------------------------------------------------------------------------------------'
-                Write-Output 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
-                Write-Output '----------------------------------------------------------------------------------------'
+                Write-Host '----------------------------------------------------------------------------------------'
+                Write-Host 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
+                Write-Host '----------------------------------------------------------------------------------------'
 
                 $job = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -Verbose -AsJob
 
                 do{
                     $status = Get-Job -id $job.Id
-                    Write-Output "Resizing" $vm.Name
+                    Write-Host "Resizing" $vm.Name
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
 
-                Write-Output '----------------------------------------------------------------------------------------'
-                Write-Output 'Resize of Virtual Machine' $vm.Name "is" $job.State
-                Write-Output '----------------------------------------------------------------------------------------'
+                Write-Host '----------------------------------------------------------------------------------------'
+                Write-Host 'Resize of Virtual Machine' $vm.Name "is" $job.State
+                Write-Host '----------------------------------------------------------------------------------------'
             }
             else
             {
-                Write-Output '----------------------------------------------------------------------------------------'
-                Write-Output 'Virtual Machine' $virtualMachine "is already sized at" $NewVmSize
-                Write-Output '----------------------------------------------------------------------------------------'
+                Write-Host '----------------------------------------------------------------------------------------'
+                Write-Host 'Virtual Machine' $virtualMachine "is already sized at" $NewVmSize
+                Write-Host '----------------------------------------------------------------------------------------'
             }
         }
     }
@@ -146,9 +144,9 @@ else
     $availabilitySetShutdown = Get-AzAvailabilitySet -Name $availabilitySetName
     $vmIds = $availabilitySetShutdown.VirtualMachinesReferences
 
-    Write-Output '----------------------------------------------------------------------------------------'
-    Write-Output 'Shutting down all virtual machines in availabiliy set:' $($availabilitySetShutdown.Name)
-    Write-Output '----------------------------------------------------------------------------------------'
+    Write-Host '----------------------------------------------------------------------------------------'
+    Write-Host 'Shutting down all virtual machines in availabiliy set:' $($availabilitySetShutdown.Name)
+    Write-Host '----------------------------------------------------------------------------------------'
 
     foreach ($vmId in $vmIds)
     {
@@ -158,7 +156,7 @@ else
 
         do{
             $status = Get-Job -id $stopVmJob.Id
-            Write-Output "Stopping" $vmName
+            Write-Host "Stopping" $vmName
             Start-Sleep 5
         } while ($status.State -eq "Running")
     }
@@ -171,9 +169,9 @@ else
 
             If($vm.HardwareProfile.VmSize -ne $NewVmSize)
             {
-                Write-Output '----------------------------------------------------------------------------------------'
-                Write-Output 'Virtual Machine' $vmName 'is being resized to' $newVmSize
-                Write-Output '----------------------------------------------------------------------------------------'
+                Write-Host '----------------------------------------------------------------------------------------'
+                Write-Host 'Virtual Machine' $vmName 'is being resized to' $newVmSize
+                Write-Host '----------------------------------------------------------------------------------------'
 
                 $vm.HardwareProfile.VmSize = $NewVmSize
 
@@ -181,7 +179,7 @@ else
 
                 do{
                     $status = Get-Job -id $updateVmJob.Id
-                    Write-Output "Resizing VM:" $vmName "to" $newVmSize
+                    Write-Host "Resizing VM:" $vmName "to" $newVmSize
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
 
@@ -189,21 +187,21 @@ else
 
                 do{
                     $status = Get-Job -id $startVmJob.Id
-                    Write-Output "Starting VM:" $vmName
+                    Write-Host "Starting VM:" $vmName
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
             }
             else
             {
-                Write-Output '----------------------------------------------------------------------------------------'
-                Write-Output 'Virtual Machine' $vm.name 'is already right sized to' $newVmSize
-                Write-Output '----------------------------------------------------------------------------------------'
+                Write-Host '----------------------------------------------------------------------------------------'
+                Write-Host 'Virtual Machine' $vm.name 'is already right sized to' $newVmSize
+                Write-Host '----------------------------------------------------------------------------------------'
 
                 $startVmJob = Start-AzVM -ResourceGroupName $resourceGroup -Name $vmName -AsJob
 
                 do{
                     $status = Get-Job -id $startVmJob.Id
-                    Write-Output "Starting VM:" $vm.Name
+                    Write-Host "Starting VM:" $vm.Name
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
             }
