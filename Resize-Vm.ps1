@@ -13,12 +13,8 @@
 .Parameter AvailabilitySetName
     Specifies the availabiltiy set name
 .NOTES
-<<<<<<< HEAD:Resize-Vm.ps1
     CSV fields: Hostaname, ResourceGroup, ToBe\VmSize, AvailabilitySet (optional)
 
-=======
-    CSV fields: Hostaname, ResourceGroup, ToBe\VmSize, AvailabilitySet (optional) 
->>>>>>> 4a5d77c58aacb33c397b0e0fd727b0f7b248f533:Set-NewVmSize.ps1
 .EXAMPLE
     . .\Resize-Vm.ps1; Resize-Vm -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2
 
