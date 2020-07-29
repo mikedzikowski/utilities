@@ -51,7 +51,7 @@ param
     [array]
     $VmList,
 
-    [Parameter(mandatory=$true, ParametersetName = 'AvailabilitySet')]
+    [Parameter(mandatory=$false, ParametersetName = 'AvailabilitySet')]
     [Parameter(mandatory=$true, ParametersetName = 'VirtualMachine')]
     [string]
     $NewVmSize,
@@ -69,6 +69,7 @@ Write-Verbose 'Creating DataTable Structure'
 $DataTable = New-Object System.Data.DataTable
 $DataTable.Columns.Add("Hostname","string") | Out-Null
 $DataTable.Columns.Add("ResourceGroup","string") | Out-Null
+$DataTable.Columns.Add("OldVMsize","string") | Out-Null
 $DataTable.Columns.Add("NewVMSize","string") | Out-Null
 
 #region resize virtual machine not in an availability set
@@ -78,6 +79,7 @@ if(!$availabilitySetName -and $VmList)
     {
         $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine
         $vm = Get-AzVM -ResourceGroupName $resourceGroup -VMName $virtualMachine
+        $oldVmSize = $vm.HardwareProfile.VmSize
 
         if($vmSize.name -contains $newVmSize)
         {
@@ -112,7 +114,8 @@ if(!$availabilitySetName -and $VmList)
                 $NewRow = $DataTable.NewRow()
                 $NewRow.Hostname = $($vm.Name)
                 $NewRow.ResourceGroup = $($vm.ResourceGroupName)
-                $NewRow.NewVmSize = $($vm.HardwareProfile.VmSize)
+                $NewRow.OldVMsize = $($oldVmSize)
+                $NewRow.NewVmSize = $($NewVmSize)
                 $DataTable.Rows.Add($NewRow)
             }
             else
@@ -141,6 +144,7 @@ else
         $string = $vmId.Id.Split("/")
         $vmName = $string[8]
         $stopVmJob = Stop-AzVM -ResourceGroupName $resourceGroup -Name $vmName -Force -AsJob
+        $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
 
         do{
             $status = Get-Job -id $stopVmJob.Id
@@ -154,6 +158,8 @@ else
         $string = $vmID.Id.Split("/")
         $vmName = $string[8]
         $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $vmName
+        $oldVmSize = $vm.HardwareProfile.VmSize
+        $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
 
             If($vm.HardwareProfile.VmSize -ne $NewVmSize)
             {
@@ -183,7 +189,8 @@ else
                 $NewRow = $DataTable.NewRow()
                 $NewRow.Hostname = $($vm.Name)
                 $NewRow.ResourceGroup = $($vm.ResourceGroupName)
-                $NewRow.NewVmSize = $($vm.HardwareProfile.VmSize)
+                $NewRow.OldVMsize = $($oldVmSize)
+                $NewRow.NewVmSize = $($NewVmSize)
                 $DataTable.Rows.Add($NewRow)
             }
             else
@@ -208,12 +215,11 @@ else
 
 if($PathtoCsv)
 {
-    
     # Import extract file data
     $ResizeExtract = Import-Csv -Path $PathtoCsv
 
     # Find availability sets in csv
-    $availabilitySets = $ResizeExtract | Select-Object -Property AvailabilitySet, ResourceGroup, ToBeVmSize -Unique
+    $availabilitySets = $ResizeExtract | Select-Object -Property AvailabilitySet, ResourceGroup -Unique
 
     #region Resize virtual machines not in an availability set
     foreach($hostname in $ResizeExtract)
@@ -253,7 +259,7 @@ if($PathtoCsv)
             if($continue -eq $true)
             {
                 Write-Host "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
-                Resize-Vm -AvailabilitySetName $as.AvailabilitySet  -ResourceGroup $as.ResourceGroup -NewVmSize $as.ToBeVmSize
+                Resize-Vm -AvailabilitySetName $as.AvailabilitySet  -ResourceGroup $as.ResourceGroup
             }
         }
     }
