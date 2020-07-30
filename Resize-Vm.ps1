@@ -64,7 +64,6 @@ param
 $CSVFileName = 'VmResizeReport ' + $(Get-Date -f yyyy-MM-dd) + '.csv'
 
 # Creating DataTable Structure
-Write-Verbose 'Creating DataTable Structure'
 $DataTable = New-Object System.Data.DataTable
 $DataTable.Columns.Add("Hostname","string") | Out-Null
 $DataTable.Columns.Add("ResourceGroup","string") | Out-Null
@@ -95,10 +94,10 @@ if(!$availabilitySetName -and $VmList)
                 Write-Host 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
                 Write-Host '----------------------------------------------------------------------------------------'
 
-                $jobs = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob 
+                $updateVmjob = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob 
 
                 do{
-                    $status = Get-Job -id $jobs.Id
+                    $status = Get-Job -id $updateVmjob.Id
                     Write-Host "Resizing" $vm.Name
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
@@ -110,7 +109,7 @@ if(!$availabilitySetName -and $VmList)
                 # Check VM Size after updating
                 $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine 
 
-                foreach ($job in $jobs)
+                foreach ($job in $updateVmJob)
                 {
                     if ($job.State -eq 'Failed')
                     {
@@ -233,9 +232,18 @@ Remove-Jobs
 #endregion
 
 Function Remove-Jobs {
-    $startJobList | Remove-Job
-    $stopJobList | Remove-Job
-    $updateVmJob | Remove-Job
+    if($startJobList)
+    {
+        $startJobList | Remove-Job
+    }
+    if($stopJobList)
+    {
+        $stopJobList | Remove-Job
+    }
+    if($updateVmJob)
+    {
+        $updateVmJob | Remove-Job
+    }
 }
 Function Add-RowToCSV {
     $NewRow = $DataTable.NewRow()
