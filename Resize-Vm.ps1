@@ -137,7 +137,7 @@ if(!$availabilitySetName -and $VmList)
         {
             $message = "Virutal Machine Size Incorrect in extract file"
             Write-Host '----------------------------------------------------------------------------------------'
-            Write-Host $message for $virtualMachine
+            Write-Host $message for $virtualMachine "please review report" "$ReportPath\$CSVFileName"
             Write-Host '----------------------------------------------------------------------------------------'
             # Add information to CSV report - error
             Add-ErrorRowToCSV
@@ -157,17 +157,17 @@ else
     Write-Host '----------------------------------------------------------------------------------------'
 
     # Shutting down VMs in AS
-    $JobList = @()
+    $stopJobList = @()
     foreach ($vmId in $vmIds)
     {
         $string = $vmId.Id.Split("/")
         $vmName = $string[8]
-        $JobList += Stop-AzVm -ResourceGroupName $resourceGroup -Name $vmName -Force -AsJob | Add-Member -MemberType NoteProperty -Name VMName -Value $vmName -PassThru
+        $stopJobList += Stop-AzVm -ResourceGroupName $resourceGroup -Name $vmName -Force -AsJob | Add-Member -MemberType NoteProperty -Name VMName -Value $vmName -PassThru
     }
     do{
         Write-Host "Stopping all virtual machines in" $($availabilitySetName) "in" $ResourceGroup
         Start-Sleep 5
-    } while ($JobList.State -contains "Running")
+    } while ($stopJobList.State -contains "Running")
 
     foreach ($vmId in $vmIDs)
     {
@@ -228,9 +228,15 @@ else
     } while ($startJobList.State -contains "Running")
 }
 $DataTable | Export-Csv "$ReportPath\$CSVFileName" -NoTypeInformation -Append -Force
+Remove-Jobs
 }
 #endregion
 
+Function Remove-Jobs {
+    $startJobList | Remove-Job
+    $stopJobList | Remove-Job
+    $updateVmJob | Remove-Job
+}
 Function Add-RowToCSV {
     $NewRow = $DataTable.NewRow()
     $NewRow.Hostname = $($vm.Name)
