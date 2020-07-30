@@ -35,7 +35,6 @@ param
     [string]
     $ReportPath
 )
-
 Function Resize-Vm {
 
 [CmdletBinding()]
@@ -71,6 +70,7 @@ $DataTable.Columns.Add("Hostname","string") | Out-Null
 $DataTable.Columns.Add("ResourceGroup","string") | Out-Null
 $DataTable.Columns.Add("OldVMsize","string") | Out-Null
 $DataTable.Columns.Add("NewVMSize","string") | Out-Null
+$DataTable.Columns.Add("ErrorMessage","string") | Out-Null
 
 #region resize virtual machine not in an availability set
 if(!$availabilitySetName -and $VmList)
@@ -95,28 +95,36 @@ if(!$availabilitySetName -and $VmList)
                 Write-Host 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
                 Write-Host '----------------------------------------------------------------------------------------'
 
-                $job = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -Verbose -AsJob
+                $jobs = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob 
 
                 do{
-                    $status = Get-Job -id $job.Id
+                    $status = Get-Job -id $jobs.Id
                     Write-Host "Resizing" $vm.Name
                     Start-Sleep 5
                 } while ($status.State -eq "Running")
 
                 Write-Host '----------------------------------------------------------------------------------------'
-                Write-Host 'Resize of Virtual Machine' $vm.Name "is" $job.State
+                Write-Host 'Resize of Virtual Machine' $vm.Name "has" $jobs.State
                 Write-Host '----------------------------------------------------------------------------------------'
 
                 # Check VM Size after updating
-                $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine
+                $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine 
 
-                # Append data to CSV File
-                $NewRow = $DataTable.NewRow()
-                $NewRow.Hostname = $($vm.Name)
-                $NewRow.ResourceGroup = $($vm.ResourceGroupName)
-                $NewRow.OldVMsize = $($oldVmSize)
-                $NewRow.NewVmSize = $($NewVmSize)
-                $DataTable.Rows.Add($NewRow)
+                foreach ($job in $jobs)
+                {
+                    if ($job.State -eq 'Failed')
+                    {
+                        $message = $job.Error
+                        Write-host "Failed Resizing VM" $vmName "please review report" "$ReportPath\$CSVFileName"
+                        Add-ErrorRowToCSV
+                    }
+                    # Append data to CSV File
+                    elseif($job.State -eq "Completed")
+                    {
+                        Add-RowToCSV
+                    }
+                }
+
             }
             else
             {
@@ -124,6 +132,15 @@ if(!$availabilitySetName -and $VmList)
                 Write-Host 'Virtual Machine' $virtualMachine "is already sized at" $NewVmSize
                 Write-Host '----------------------------------------------------------------------------------------'
             }
+        }
+        else
+        {
+            $message = "Virutal Machine Size Incorrect in extract file"
+            Write-Host '----------------------------------------------------------------------------------------'
+            Write-Host $message for $virtualMachine
+            Write-Host '----------------------------------------------------------------------------------------'
+            # Add information to CSV report - error
+            Add-ErrorRowToCSV
         }
     }
 }
@@ -139,19 +156,18 @@ else
     Write-Host 'Shutting down all virtual machines in availabiliy set:' $($availabilitySetShutdown.Name)
     Write-Host '----------------------------------------------------------------------------------------'
 
+    # Shutting down VMs in AS
+    $JobList = @()
     foreach ($vmId in $vmIds)
     {
         $string = $vmId.Id.Split("/")
         $vmName = $string[8]
-        $stopVmJob = Stop-AzVM -ResourceGroupName $resourceGroup -Name $vmName -Force -AsJob
-        $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
-
-        do{
-            $status = Get-Job -id $stopVmJob.Id
-            Write-Host "Stopping" $vmName
-            Start-Sleep 5
-        } while ($status.State -eq "Running")
+        $JobList += Stop-AzVm -ResourceGroupName $resourceGroup -Name $vmName -Force -AsJob | Add-Member -MemberType NoteProperty -Name VMName -Value $vmName -PassThru
     }
+    do{
+        Write-Host "Stopping all virtual machines in" $($availabilitySetName) "in" $ResourceGroup
+        Start-Sleep 5
+    } while ($JobList.State -contains "Running")
 
     foreach ($vmId in $vmIDs)
     {
@@ -161,57 +177,78 @@ else
         $oldVmSize = $vm.HardwareProfile.VmSize
         $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
 
-            If($vm.HardwareProfile.VmSize -ne $NewVmSize)
+        If($vm.HardwareProfile.VmSize -ne $NewVmSize)
+        {
+            Write-Host '----------------------------------------------------------------------------------------'
+            Write-Host 'Virtual Machine' $vmName 'is being resized to' $newVmSize
+            Write-Host '----------------------------------------------------------------------------------------'
+
+            $vm.HardwareProfile.VmSize = $NewVmSize
+
+            $updateVmJob = Update-AzVM -ResourceGroupName $resourceGroup -VM $vm -AsJob
+
+            do{
+                $status = Get-Job -id $updateVmJob.Id
+                Write-Host "Resizing VM:" $vmName "to" $newVmSize
+                Start-Sleep 5
+            } while ($status.State -eq "Running")
+
+            foreach ($job in $updateVmJob)
             {
-                Write-Host '----------------------------------------------------------------------------------------'
-                Write-Host 'Virtual Machine' $vmName 'is being resized to' $newVmSize
-                Write-Host '----------------------------------------------------------------------------------------'
-
-                $vm.HardwareProfile.VmSize = $NewVmSize
-
-                $updateVmJob = Update-AzVM -ResourceGroupName $resourceGroup -VM $vm -AsJob
-
-                do{
-                    $status = Get-Job -id $updateVmJob.Id
-                    Write-Host "Resizing VM:" $vmName "to" $newVmSize
-                    Start-Sleep 5
-                } while ($status.State -eq "Running")
-
-                $startVmJob = Start-AzVM -ResourceGroupName $resourceGroup -Name $vmName -AsJob
-
-                do{
-                    $status = Get-Job -id $startVmJob.Id
-                    Write-Host "Starting VM:" $vmName
-                    Start-Sleep 5
-                } while ($status.State -eq "Running")
-
-                # Append data to CSV File
-                $NewRow = $DataTable.NewRow()
-                $NewRow.Hostname = $($vm.Name)
-                $NewRow.ResourceGroup = $($vm.ResourceGroupName)
-                $NewRow.OldVMsize = $($oldVmSize)
-                $NewRow.NewVmSize = $($NewVmSize)
-                $DataTable.Rows.Add($NewRow)
-            }
-            else
-            {
-                Write-Host '----------------------------------------------------------------------------------------'
-                Write-Host 'Virtual Machine' $vm.name 'is already right sized to' $newVmSize
-                Write-Host '----------------------------------------------------------------------------------------'
-
-                $startVmJob = Start-AzVM -ResourceGroupName $resourceGroup -Name $vmName -AsJob
-
-                do{
-                    $status = Get-Job -id $startVmJob.Id
-                    Write-Host "Starting VM:" $vm.Name
-                    Start-Sleep 5
-                } while ($status.State -eq "Running")
+                if ($job.State -eq 'Failed')
+                {
+                    $message = $job.Error
+                    Write-host "Failed Resizing VM" $vmName "please review report" "$ReportPath\$CSVFileName"
+                    Add-ErrorRowToCSV
+                }
+                 # Append data to CSV File
+                elseif($job.State -eq "Completed")
+                {
+                    Add-RowToCSV
+                }
             }
         }
+        else
+        {
+            Write-Host '----------------------------------------------------------------------------------------'
+            Write-Host 'Virtual Machine' $vm.name 'is already right sized to' $newVmSize
+            Write-Host '----------------------------------------------------------------------------------------'
+        }
     }
-    $DataTable | Export-Csv "$ReportPath\$CSVFileName" -NoTypeInformation -Append -Force
+    $startJobList = @()
+    foreach ($vmId in $vmIds)
+    {
+        $string = $vmId.Id.Split("/")
+        $vmName = $string[8]
+        $startJobList += Start-AzVM -ResourceGroupName $resourceGroup -Name $vmName -AsJob | Add-Member -MemberType NoteProperty -Name VMName -Value $vmName -PassThru
+    }
+    do{
+        Write-Host "Starting VMs in" $($availabilitySetName)
+        Start-Sleep 5
+    } while ($startJobList.State -contains "Running")
+}
+$DataTable | Export-Csv "$ReportPath\$CSVFileName" -NoTypeInformation -Append -Force
 }
 #endregion
+
+Function Add-RowToCSV {
+    $NewRow = $DataTable.NewRow()
+    $NewRow.Hostname = $($vm.Name)
+    $NewRow.ResourceGroup = $($vm.ResourceGroupName)
+    $NewRow.OldVMsize = $($oldVmSize)
+    $NewRow.NewVmSize = $($NewVmSize)
+    $DataTable.Rows.Add($NewRow)
+}
+
+Function Add-ErrorRowToCSV {
+    $NewRow = $DataTable.NewRow()
+    $NewRow.Hostname = $($vm.Name)
+    $NewRow.ResourceGroup = $($vm.ResourceGroupName)
+    $NewRow.OldVMsize = $($oldVmSize)
+    $NewRow.NewVmSize = "Not Resized"
+    $NewRow.ErrorMessage = $($message)
+    $DataTable.Rows.Add($NewRow)
+}
 
 if($PathtoCsv)
 {
