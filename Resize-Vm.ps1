@@ -31,7 +31,7 @@ param
     [string]
     $PathtoCsv,
 
-    [Parameter(mandatory=$true)]
+    [Parameter(mandatory=$false)]
     [string]
     $ReportPath
 )
@@ -57,7 +57,12 @@ param
 
     [Parameter(mandatory=$true, ParametersetName = 'AvailabilitySet')]
     [Parameter(mandatory=$false,ParametersetName = 'VirtualMachine')]
-    $AvailabilitySetName
+    $AvailabilitySetName,
+
+    [Parameter(mandatory=$true, ParametersetName = 'AvailabilitySet')]
+    [Parameter(mandatory=$true, ParametersetName = 'VirtualMachine')]
+    [string]
+    $ReportPath
 )
 
 # CSV FileName
@@ -94,7 +99,7 @@ if(!$availabilitySetName -and $VmList)
                 Write-Host 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
                 Write-Host '----------------------------------------------------------------------------------------'
 
-                $updateVmjob = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob 
+                $updateVmjob = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob
 
                 do{
                     $status = Get-Job -id $updateVmjob.Id
@@ -107,7 +112,7 @@ if(!$availabilitySetName -and $VmList)
                 Write-Host '----------------------------------------------------------------------------------------'
 
                 # Check VM Size after updating
-                $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine 
+                $vmSize = Get-AzVMSize -ResourceGroupName $resourceGroup -VMName $virtualMachine
 
                 foreach ($job in $updateVmJob)
                 {
@@ -154,7 +159,6 @@ else
     Write-Host '----------------------------------------------------------------------------------------'
     Write-Host 'Shutting down all virtual machines in availabiliy set:' $($availabilitySetShutdown.Name)
     Write-Host '----------------------------------------------------------------------------------------'
-
     # Shutting down VMs in AS
     $stopJobList = @()
     foreach ($vmId in $vmIds)
@@ -174,8 +178,10 @@ else
         $vmName = $string[8]
         $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $vmName
         $oldVmSize = $vm.HardwareProfile.VmSize
-        $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
-
+        If($PathtoCsv)
+        {
+            $NewVmSize = ($ResizeExtract | Where-Object {$_.hostname -match $vmname}).ToBeVmSize
+        }
         If($vm.HardwareProfile.VmSize -ne $NewVmSize)
         {
             Write-Host '----------------------------------------------------------------------------------------'
@@ -277,7 +283,7 @@ if($PathtoCsv)
     {
         if(!$hostname.AvailabilitySet)
         {
-            Resize-Vm -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup
+            Resize-Vm -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup -ReportPath $ReportPath
         }
     }
     #endregion
@@ -310,7 +316,7 @@ if($PathtoCsv)
             if($continue -eq $true)
             {
                 Write-Host "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
-                Resize-Vm -AvailabilitySetName $as.AvailabilitySet  -ResourceGroup $as.ResourceGroup
+                Resize-Vm -AvailabilitySetName $as.AvailabilitySet -ResourceGroup $as.ResourceGroup -ReportPath $ReportPath
             }
         }
     }
