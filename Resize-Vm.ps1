@@ -108,7 +108,7 @@ if(!$availabilitySetName -and $VmList)
                 } while ($status.State -eq "Running")
 
                 Write-Host '----------------------------------------------------------------------------------------'
-                Write-Host 'Resize of Virtual Machine' $vm.Name "has" $jobs.State
+                Write-Host 'Resize of Virtual Machine' $vm.Name "has" $status.State
                 Write-Host '----------------------------------------------------------------------------------------'
 
                 # Check VM Size after updating
