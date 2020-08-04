@@ -257,7 +257,6 @@ Function Add-RowToCSV {
     $NewRow.NewVmSize = $($NewVmSize)
     $DataTable.Rows.Add($NewRow)
 }
-
 Function Add-ErrorRowToCSV {
     $NewRow = $DataTable.NewRow()
     $NewRow.Hostname = $($vm.Name)
@@ -269,8 +268,6 @@ Function Add-ErrorRowToCSV {
 }
 
 Function Resize-VmSkuNotFound {
-
-
     $vm = Get-AzVM -ResourceGroupName $resourceGroup -VMName $virtualMachine
     $oldVmSize = $vm.HardwareProfile.VmSize
     $vm.HardwareProfile.VmSize = $newVmSize
@@ -288,7 +285,7 @@ Function Resize-VmSkuNotFound {
     Write-Host 'Resizing Virtual Machine' $vm.Name "to Sku size" $newVmSize
     Write-Host '----------------------------------------------------------------------------------------'
 
-    $updateVmjob = Update-AzVM -VM $vm.name -ResourceGroupName $resourceGroup -AsJob
+    $updateVmjob = Update-AzVM -VM $vm -ResourceGroupName $resourceGroup -AsJob
 
     do{
         $status = Get-Job -id $updateVmjob.Id
@@ -308,7 +305,7 @@ Function Resize-VmSkuNotFound {
         if ($job.State -eq 'Failed')
         {
             $message = $job.Error
-            Write-host "Failed Resizing VM" $vm.name "please review report" "$ReportPath\$CSVFileName"
+            Write-host "Failed Resizing VM" $($vm.name) "please review report" "$ReportPath\$CSVFileName"
             Add-ErrorRowToCSV
         }
         # Append data to CSV File
