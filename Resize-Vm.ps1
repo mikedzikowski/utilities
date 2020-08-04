@@ -276,7 +276,7 @@ Function Resize-VmSkuNotFound {
     $stopJobList += Stop-AzVm -ResourceGroupName $resourceGroup -Name $vm.name -Force -AsJob | Add-Member -MemberType NoteProperty -Name VMName -Value $vm.name -PassThru
 
     do{
-        Write-Host "Stopping virtual machines" $vm.name "in" $ResourceGroup
+        Write-Host "Stopping virtual machine" $vm.name "in" $ResourceGroup
         Start-Sleep 5
     } while ($stopJobList.State -contains "Running")
 
