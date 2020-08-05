@@ -14,15 +14,17 @@
     Specifies the availabiltiy set name
 .Parameter ReportPath
     Specifies the path of report output
+.Parameter FileName
+    Specifies the filename appended to .csv file. Example when using "TestFile": TestFile_VmResizeReport_2020-01-01.csv
 .NOTES
     CSV fields: Hostname, ResourceGroup, ToBeVmSize, AvailabilitySet (optional)
 
 .EXAMPLE
-    . .\Resize-Vm.ps1; Resize-Vm -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2 -ReportPath C:\temp
+    . .\Resize-Vm.ps1; Resize-Vm -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2 -ReportPath C:\temp -FileName "TestFile"
 
-    . .\Resize-Vm.ps1; Resize-Vm -VmList VM1, VM2 -ResourceGroup RG1 -NewVmSize Standard_DS2_v2 -ReportPath C:\temp
+    . .\Resize-Vm.ps1; Resize-Vm -VmList VM1, VM2 -ResourceGroup RG1 -NewVmSize Standard_DS2_v2 -ReportPath C:\temp -FileName "TestFile"
 
-    . .\Resize-Vm -PathToCsv C:\Path.csv -ReportPath C:\temp
+    . .\Resize-Vm -PathToCsv C:\Path.csv -ReportPath C:\temp -FileName "TestFile"
 #>
 [CmdletBinding()]
 param
@@ -33,7 +35,12 @@ param
 
     [Parameter(mandatory=$false)]
     [string]
-    $ReportPath
+    $ReportPath,
+
+    [Parameter(mandatory=$false)]
+    [string]
+    $Filename
+
 )
 Function Resize-Vm {
 
@@ -62,11 +69,16 @@ param
     [Parameter(mandatory=$true, ParametersetName = 'AvailabilitySet')]
     [Parameter(mandatory=$true, ParametersetName = 'VirtualMachine')]
     [string]
-    $ReportPath
+    $ReportPath,
+
+    [Parameter(mandatory=$true, ParametersetName = 'AvailabilitySet')]
+    [Parameter(mandatory=$true, ParametersetName = 'VirtualMachine')]
+    [string]
+    $Filename
 )
 
 # CSV FileName
-$CSVFileName = 'VmResizeReport ' + $(Get-Date -f yyyy-MM-dd) + '.csv'
+$CSVFileName = $Filename + '_VmResizeReport_' + $(Get-Date -f yyyy-MM-dd) + '.csv'
 
 # Creating DataTable Structure
 $DataTable = New-Object System.Data.DataTable
@@ -335,7 +347,7 @@ if($PathtoCsv)
     {
         if(!$hostname.AvailabilitySet)
         {
-            Resize-Vm -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup -ReportPath $ReportPath
+            Resize-Vm -VmList $hostname.hostname -NewVmSize $hostname.ToBeVmSize -ResourceGroup $hostname.ResourceGroup -ReportPath $ReportPath -Filename $Filename
         }
     }
     #endregion
@@ -368,7 +380,7 @@ if($PathtoCsv)
             if($continue -eq $true)
             {
                 Write-Host "Verified virtual machines in Availability Set are listed in extract file - continuing with resize of VMS"
-                Resize-Vm -AvailabilitySetName $as.AvailabilitySet -ResourceGroup $as.ResourceGroup -ReportPath $ReportPath
+                Resize-Vm -AvailabilitySetName $as.AvailabilitySet -ResourceGroup $as.ResourceGroup -ReportPath $ReportPath -Filename $Filename
             }
         }
     }
