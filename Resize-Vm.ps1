@@ -20,11 +20,11 @@
     CSV fields: Hostname, ResourceGroup, ToBeVmSize, AvailabilitySet (optional)
 
 .EXAMPLE
-    . .\Resize-Vm.ps1; Resize-Vm -AvailabilitySetName "AS1"  -ResourceGroup RG1 -NewVmSize Standard_DS3_v2 -ReportPath C:\temp -FileName "TestFile"
+    . .\Resize-Vm.ps1; Resize-Vm -AvailabilitySetName "AS1"  -ResourceGroup "RG1" -NewVmSize "Standard_DS3_v2" -ReportPath "C:\temp" -FileName "TestFile"
 
-    . .\Resize-Vm.ps1; Resize-Vm -VmList VM1, VM2 -ResourceGroup RG1 -NewVmSize Standard_DS2_v2 -ReportPath C:\temp -FileName "TestFile"
+    . .\Resize-Vm.ps1; Resize-Vm -VmList VM1, VM2 -ResourceGroup "RG1" -NewVmSize "Standard_DS2_v2" -ReportPath "C:\temp" -FileName "TestFile"
 
-    . .\Resize-Vm -PathToCsv C:\Path.csv -ReportPath C:\temp -FileName "TestFile"
+    . .\Resize-Vm -PathToCsv "C:\Path.csv" -ReportPath "C:\temp" -FileName "TestFile"
 #>
 [CmdletBinding()]
 param
