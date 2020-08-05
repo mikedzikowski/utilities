@@ -79,6 +79,7 @@ param
 
 # CSV FileName
 $CSVFileName = $Filename + '_VmResizeReport_' + $(Get-Date -f yyyy-MM-dd) + '.csv'
+Write-host "Writing output to:" $ReportPath\$CSVFileName
 
 # Creating DataTable Structure
 $DataTable = New-Object System.Data.DataTable
