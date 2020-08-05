@@ -5,15 +5,17 @@
     When resizing virtual machines in an Availability Set, this script will verify that all machines listed in CSV match the machines in the Availability Set
     before resizing the machines.
 .Parameter ResourceGroup
-    Specifies the Resource Group of the virtual machine or availability set
+    Specifies the Resource Group of the virtual machine or availability set.
 .Parameter VmList
-    An array of virtual machine names
+    An array of virtual machine names.
 .Parameter NewVmSize
-    Specifies the Sku size for the virtual machine
+    Specifies the Sku size for the virtual machine.
 .Parameter AvailabilitySetName
-    Specifies the availabiltiy set name
+    Specifies the availabiltiy set name.
 .Parameter ReportPath
-    Specifies the path of report output
+    Specifies the path of report output.
+.Parameter PathToCsv
+    Specifies the path of csv file.
 .Parameter FileName
     Specifies the filename appended to .csv file. Example when using "TestFile": TestFile_VmResizeReport_2020-01-01.csv
 .NOTES
