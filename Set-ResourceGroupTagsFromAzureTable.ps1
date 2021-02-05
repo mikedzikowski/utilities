@@ -9,15 +9,15 @@
 
 .PARAMETER StorageAccountResourceGroupName
 
-    Resource group name where the storage account resides that contains the Azure table storage account
+    Resource group name where the storage account resides that contains the Azure table storage account.
 
 .PARAMETER StorageAccountName
 
-    Storage account name where Azure table storage account resides
+    Storage account name where Azure table storage account resides.
 
 .PARAMETER TableName
 
-    Name of table where the tag data is located
+    Name of table where the tag data is located.
 
 .NOTES
     Update tag hashtable to fit organizational requirements to include tag values required.
