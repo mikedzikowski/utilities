@@ -32,7 +32,7 @@
     Etag           : W/"datetime'2021-02-03T20%3A55%3A55.9723037Z'"
 
 .Example
-.\Set-ResourceGroupTags.ps1 -StorageAccountResourceGroupName RG1 -StorageAccountName StorageAccount1 -TableName Table1
+.\Set-ResourceGroupTagsFromAzureTable.ps1 -StorageAccountResourceGroupName RG1 -StorageAccountName StorageAccount1 -TableName Table1
     
 #>
 
