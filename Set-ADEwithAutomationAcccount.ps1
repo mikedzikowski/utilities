@@ -11,7 +11,11 @@ param
 (
     [Parameter(mandatory=$true)]
     [string]
-    $keyvault
+    $Keyvault,
+    
+    [Parameter(mandatory=$true)]
+    [string]
+    $CloudEnvironment
 )
 
 # Get the connection "AzureRunAsConnection"
@@ -23,7 +27,7 @@ $servicePrincipalConnection = Get-AutomationConnection -Name $connectionName
 try 
 {
         Connect-AzAccount `
-        -EnvironmentName AzureCloud `
+        -EnvironmentName $CloudEnvironment `
         -ServicePrincipal `
         -TenantId $servicePrincipalConnection.TenantId `
         -ApplicationId $servicePrincipalConnection.ApplicationId `
