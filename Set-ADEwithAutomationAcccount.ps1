@@ -36,7 +36,11 @@ param
     
     [Parameter(mandatory=$true)]
     [string]
-    $CloudEnvironment
+    $CloudEnvironment,
+    
+    [Parameter(mandatory=$true)]
+    [string]
+    $SubscriptionName
 )
 
 # Get the connection "AzureRunAsConnection"
@@ -68,7 +72,7 @@ catch
     }
 }
 # Find Subscription 
-$subscriptions = Get-AzSubscription -SubscriptionName "demosub"
+$subscriptions = Get-AzSubscription -SubscriptionName $SubscriptionName
 
 # Loop Through Subs
 foreach($Subscription in $Subscriptions)
