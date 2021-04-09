@@ -6,6 +6,14 @@ Import-Module Az.Security
 Import-Module Az.Compute
 Import-Module Az.KeyVault
 
+[CmdletBinding()]
+param
+(
+    [Parameter(mandatory=$true)]
+    [string]
+    $keyvault
+)
+
 # Get the connection "AzureRunAsConnection"
 $connectionName = "AzureRunAsConnection"
 
@@ -57,7 +65,7 @@ foreach($SecurityTask in $SecurityTasks)
     Select-AzSubscription $sub
 
     # Check for Existing Keyvault
-    [array]$vaultnames = "ADEVaultDEMO"
+    [array]$vaultnames = $keyvault
     [array]$localvault = $null
     $vaultnames += (Get-AzKeyVault).VaultName
     foreach ($vaultname in $vaultnames)
