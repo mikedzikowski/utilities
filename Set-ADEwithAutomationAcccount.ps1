@@ -3,11 +3,11 @@
 <#.SYNOPSIS
         Simple Script that can be used with an Azure Automation Account to upate ADE settings.
 .DESCRIPTION
-         Simple Script that can be used with an Azure Automation Account to upate ADE settings.
+        Simple Script that can be used with an Azure Automation Account to upate ADE settings.
 .Parameter Keyvault
-		Specifies the Vault name where key will be set.
+	Specifies the Vault name where key will be set.
 .Parameter CloudEnvironment
-		Specifies the cloud (i.e. AzureCloud vs AzureUSGovernment).  
+ 	Specifies the cloud (i.e. AzureCloud vs AzureUSGovernment).  
 .NOTES
     script based on work found here: https://github.com/Azure/Azure-Security-Center/blob/master/Remediation%20scripts/Disk%20encryption%20should%20be%20applied%20on%20virtual%20machines/Powershell/Enable-AzureVMDiskEncryption.ps1
 #>
