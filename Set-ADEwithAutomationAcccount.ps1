@@ -9,7 +9,15 @@
 .Parameter CloudEnvironment
  	Specifies the cloud (i.e. AzureCloud vs AzureUSGovernment).  
 .NOTES
-    script based on work found here: https://github.com/Azure/Azure-Security-Center/blob/master/Remediation%20scripts/Disk%20encryption%20should%20be%20applied%20on%20virtual%20machines/Powershell/Enable-AzureVMDiskEncryption.ps1
+    	script based on work found here: https://github.com/Azure/Azure-Security-Center/blob/master/Remediation%20scripts/Disk%20encryption%20should%20be%20applied%20on%20virtual%20machines/Powershell/Enable-AzureVMDiskEncryption.ps1
+    
+    	The following modules must be imported into the Azure Automation environment
+    
+	Azure
+	Az.Accounts
+	Az.Security
+	Az.Compute
+	Az.KeyVault
 #>
 
 
