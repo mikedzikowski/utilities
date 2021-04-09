@@ -20,13 +20,6 @@
 	Az.KeyVault
 #>
 
-
-Import-Module Azure
-Import-Module Az.Accounts
-Import-Module Az.Security
-Import-Module Az.Compute
-Import-Module Az.KeyVault
-
 [CmdletBinding()]
 param
 (
@@ -42,6 +35,12 @@ param
     [string]
     $SubscriptionName
 )
+
+Import-Module Azure
+Import-Module Az.Accounts
+Import-Module Az.Security
+Import-Module Az.Compute
+Import-Module Az.KeyVault
 
 # Get the connection "AzureRunAsConnection"
 $connectionName = "AzureRunAsConnection"
