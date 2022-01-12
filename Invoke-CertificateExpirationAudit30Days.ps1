@@ -30,7 +30,7 @@ catch
     }
 }
 # Find Subscription 
-$subscriptions = Get-AzureRmSubscription -SubscriptionName "US Army HQ TRADOC G-6 Production"
+$subscriptions = Get-AzureRmSubscription -SubscriptionName "<SUBSCRIPTION>"
 
 $resourceGroups = Get-AzureRmResourceGroup 
 
