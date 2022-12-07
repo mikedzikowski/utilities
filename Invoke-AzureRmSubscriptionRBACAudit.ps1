@@ -1,4 +1,5 @@
 ﻿#requires -Version 3.0 -Modules Az.Resources
+ # Original Author: https://www.codeisahighway.com/how-to-audit-an-azure-subscription-role-based-access-control-rbac-assignments/
 param(
  [switch]
  $email
