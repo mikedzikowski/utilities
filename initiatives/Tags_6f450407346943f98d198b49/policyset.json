@@ -1,0 +1,56 @@
+{
+ "properties": {
+  "displayName": "Tags",
+  "policyType": "Custom",
+  "metadata": {
+   "createdBy": "02f566c6-4897-44a2-bd56-e8458b01d97d",
+   "createdOn": "2023-01-24T13:11:49.5075919Z",
+   "updatedBy": null,
+   "updatedOn": null
+  },
+  "parameters": {
+   "envName": {
+    "type": "string",
+    "metadata": {
+     "displayName": "Environment"
+    },
+    "allowedValues": [
+     "Environment"
+    ]
+   },
+   "envValue": {
+    "type": "string",
+    "metadata": {
+     "displayName": "envValue"
+    },
+    "allowedValues": [
+     "Prod",
+     "Dev"
+    ]
+   }
+  },
+  "policyDefinitions": [
+   {
+    "policyDefinitionReferenceId": "env",
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/d157c373-a6c4-483d-aaad-570756956268",
+    "parameters": {
+     "tagName": {
+      "value": "[parameters('envName')]"
+     },
+     "tagValue": {
+      "value": "[parameters('envValue')]"
+     }
+    },
+    "groupNames": []
+   }
+  ],
+  "policyDefinitionGroups": [
+   {
+    "name": "tags"
+   }
+  ]
+ },
+ "id": "/subscriptions/4e3a895f-7d61-4912-8567-5fefd1c6264a/providers/Microsoft.Authorization/policySetDefinitions/6f450407346943f98d198b49",
+ "type": "Microsoft.Authorization/policySetDefinitions",
+ "name": "6f450407346943f98d198b49"
+}
